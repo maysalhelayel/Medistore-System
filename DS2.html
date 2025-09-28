@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Medicine Inventory</title>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #490101, #05000c);
+            background-size: 300% 300%;
+            animation: gradientAnimation 8s ease infinite;
+            color: #f60000;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        @keyframes gradientAnimation {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .container {
+            text-align: center;
+            background: rgba(233, 227, 227, 0.7);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0px 4px 30px rgba(231, 0, 0, 0.3);
+            backdrop-filter: blur(12px);
+            width: 90%;
+            max-width: 900px;
+        }
+
+        h2 {
+            font-size: 50px;
+            color: #880505;
+            margin-bottom: 20px;
+        }
+
+        .input-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        .input-container input {
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            width: 220px;
+            font-size: 16px;
+            text-align: center;
+            background-color: #444;
+            color: #fff;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .input-container input:focus {
+            box-shadow: 0 0 10px rgba(202, 27, 27, 0.6);
+        }
+
+        button {
+            padding: 14px 20px;
+            border: none;
+            background: #5b0505;
+            color: white;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background: #8a5d47;
+        }
+
+        .data-table {
+            width: 100%;
+            margin-top: 30px;
+            border-collapse: collapse;
+            background: #ab08d4;
+            color: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            border: 1px solid #000000;
+            text-align: center;
+        }
+
+        th {
+            background: #222;
+            color: #f4a261;
+        }
+
+        td {
+            background: #080505;
+        }
+
+        .search-container {
+            margin-bottom: 20px;
+        }
+
+        .search-container input {
+            padding: 12px;
+            width: 220px;
+            font-size: 16px;
+            border-radius: 10px;
+            background-color: #1b1414;
+            border: none;
+            color: #fff;
+            outline: none;
+        }
+
+        #reader {
+            width: 100%;
+            height: 300px;
+            margin-top: 20px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Print styles */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+
+            .container,
+            .container * {
+                visibility: visible;
+            }
+
+            .container {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+            }
+
+            #reader,
+            .input-container,
+            .search-container button,
+            button {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h2>مخزن الأدوية</h2>
+
+        <!-- Barcode input and scanner -->
+        <div class="input-container">
+            <input type="text" id="barcode" placeholder="الباركود" oninput="barcodeScanned()">
+            <button onclick="startScanner()">امسح الباركود</button>
+        </div>
+        <br><br>
+        <div id="reader" class="hidden"></div>
+        <br><br>
+        <div class="input-container">
+            <input type="text" id="medicineName" placeholder="اسم الدواء">
+            <input type="number" id="quantity" placeholder="الكمية">
+            <input type="date" id="expiryDate">
+            <input type="text" id="price" placeholder="السعر">
+            <button onclick="addMedicine()">إدخال</button>
+        </div>
+
+        <button onclick="printPage()">اطبع PDF</button>
+
+        <!-- Search Bar Above the Table -->
+        <br><br>
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="ابحث عن الدواء..." onkeyup="searchMedicine()">
+        </div>
+
+        <!-- Medicine Table -->
+        <table class="data-table" id="medicineTable">
+            <thead>
+                <tr>
+                    <th>الباركود</th>
+                    <th>اسم الدواء</th>
+                    <th>الكمية</th>
+                    <th>تاريخ الانتهاء</th>
+                    <th>السعر</th>
+                    <th>حذف</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            loadMedicineData();
+            const inputs = document.querySelectorAll(".input-container input");
+            inputs.forEach((input, index) => {
+                input.addEventListener("keydown", function (event) {
+                    if (event.key === "Enter") {
+                        event.preventDefault();
+                        if (index < inputs.length - 1) {
+                            inputs[index + 1].focus();
+                        } else {
+                            addMedicine();
+                        }
+                    }
+                });
+            });
+        });
+
+        function startScanner() {
+            const reader = new Html5Qrcode("reader");
+            reader.start({ facingMode: "environment" }, {
+                fps: 10,
+                qrbox: 250
+            }, (decodedText, decodedResult) => {
+                document.getElementById("barcode").value = decodedText;
+                document.getElementById("medicineName").focus();
+            }).catch(err => {
+                console.error("Error scanning: ", err);
+            });
+        }
+
+        function barcodeScanned() {
+            let barcode = document.getElementById("barcode").value;
+            if (barcode.length > 0) {
+                document.getElementById("medicineName").focus();
+            }
+        }
+
+        function addMedicine() {
+            let barcode = document.getElementById("barcode").value;
+            let name = document.getElementById("medicineName").value;
+            let quantity = document.getElementById("quantity").value;
+            let expiryDate = document.getElementById("expiryDate").value;
+            let price = document.getElementById("price").value;
+
+            let table = document.getElementById("medicineTable").getElementsByTagName('tbody')[0];
+            let newRow = table.insertRow();
+            newRow.innerHTML = `<td>${barcode}</td><td>${name}</td><td>${quantity}</td><td>${expiryDate}</td><td>${price}</td><td><button onclick="deleteRow(this)">حذف</button></td>`;
+
+            saveMedicineData();
+
+            document.getElementById("barcode").value = '';
+            document.getElementById("medicineName").value = '';
+            document.getElementById("quantity").value = '';
+            document.getElementById("expiryDate").value = '';
+            document.getElementById("price").value = '';
+            document.getElementById("barcode").focus();
+        }
+
+        function deleteRow(button) {
+            let row = button.parentElement.parentElement;
+            row.remove();
+            saveMedicineData();
+        }
+
+        function saveMedicineData() {
+            let table = document.getElementById("medicineTable").getElementsByTagName('tbody')[0];
+            let data = [];
+            for (let row of table.rows) {
+                let rowData = [];
+                for (let cell of row.cells) {
+                    if (cell.querySelector("button")) continue;
+                    rowData.push(cell.textContent);
+                }
+                data.push(rowData);
+            }
+            localStorage.setItem("medicineData", JSON.stringify(data));
+        }
+
+        function loadMedicineData() {
+            let table = document.getElementById("medicineTable").getElementsByTagName('tbody')[0];
+            let data = JSON.parse(localStorage.getItem("medicineData")) || [];
+            data.forEach(rowData => {
+                let newRow = table.insertRow();
+                newRow.innerHTML = `<td>${rowData[0]}</td><td>${rowData[1]}</td><td>${rowData[2]}</td><td>${rowData[3]}</td><td>${rowData[4]}</td><td><button onclick="deleteRow(this)">حذف</button></td>`;
+            });
+        }
+
+        function searchMedicine() {
+            let input = document.getElementById("searchInput").value.toLowerCase();
+            let table = document.getElementById("medicineTable");
+            let rows = table.getElementsByTagName("tr");
+
+            for (let i = 1; i < rows.length; i++) {
+                let cells = rows[i].getElementsByTagName("td");
+                let found = false;
+                for (let j = 1; j < cells.length - 1; j++) {
+                    if (cells[j].textContent.toLowerCase().includes(input)) {
+                        found = true;
+                        break;
+                    }
+                }
+                rows[i].style.display = found ? "" : "none";
+            }
+        }
+
+        function printPage() {
+            window.print();
+        }
+    </script>
+</body>
+
+</html>

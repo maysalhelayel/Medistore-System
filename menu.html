@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: #f0f0f0;
+            margin: 0;
+        }
+
+        .menu-container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            width: 300px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #a18cd1;
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px 0;
+            transition: background 0.3s ease;
+        }
+
+        button:hover {
+            background: #7f6aa8;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="menu-container">
+        <h2>Select Page</h2>
+        <button onclick="location.href='PH2.html'">📊 Daily Sales</button>
+        <button onclick="location.href='DS2.html'">📝 Enter Sales</button>
+    </div>
+
+</body>
+
+</html>

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ar">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة الأدوية</title>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;700&display=swap');
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #0aa385, #020b0a, #023741);
+            background-size: 200% 200%;
+            animation: gradientAnimation 8s ease infinite;
+            color: #fff;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        @keyframes gradientAnimation {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .container {
+            background: rgb(50, 83, 84);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgb(220, 114, 204);
+            width: 90%;
+            max-width: 600px;
+            text-align: center;
+            backdrop-filter: blur(15px);
+            margin-bottom: 100px;
+        }
+
+        .input-container {
+            margin: 15px 0;
+        }
+
+        input,
+        button {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            outline: none;
+            font-size: 16px;
+        }
+
+        input {
+            background: rgb(177, 168, 177);
+            color: #fff;
+            border: 1px solid rgba(199, 171, 221, 0.3);
+        }
+
+        input::placeholder {
+            color: rgba(87, 79, 79, 0.6);
+            font-weight: 300;
+        }
+
+        button {
+            background: #0ecd11;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: #147d4a;
+        }
+
+        .output-container {
+            margin-top: 20px;
+            text-align: right;
+        }
+
+        #totalSalesBox {
+            position: fixed;
+            bottom: 20px;
+            width: 90%;
+            max-width: 600px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px;
+            background: rgba(196, 17, 17, 0.6);
+            border-radius: 10px;
+            font-size: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .reset-button {
+            background: #100101;
+            transition: 0.3s;
+            padding: 6px 10px;
+            font-size: 14px;
+        }
+
+        .reset-button:hover {
+            background: #d32f2f;
+        }
+
+        #saleQuantity {
+            width: 50px;
+            text-align: center;
+            padding: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h2>إدارة الأدوية</h2>
+        <div class="input-container">
+            <input type="text" id="barcode" placeholder="مسح الباركود" oninput="barcodeScanned()">
+            <br><br>
+            <button onclick="startScanner()">امسح الباركود</button>
+        </div>
+        <div class="input-container">
+            <input type="text" id="medicineNameInput" placeholder="اسم الدواء" oninput="searchByName()">
+        </div>
+        <div class="output-container" id="output">
+            <p><strong>اسم الدواء: </strong><span id="medicineName">غير موجود</span></p>
+            <p><strong>السعر: </strong><span id="price">غير موجود</span></p>
+            <p><strong>الكمية: </strong><span id="quantity">غير موجود</span></p>
+            <p><strong>تاريخ الانتهاء: </strong><span id="expiryDate">غير موجود</span></p>
+        </div>
+        <div class="input-container">
+            <label for="saleQuantity">الكمية:</label>
+            <input type="number" id="saleQuantity" value="1" min="1">
+        </div>
+        <div class="input-container">
+            <button onclick="confirmSale()">تأكيد عملية البيع</button>
+        </div>
+        <div class="input-container">
+            <button class="reset-button" onclick="resetSales()">إعادة تصفير عداد المبيعات</button>
+        </div>
+    </div>
+
+    <div id="totalSalesBox">
+        <span>إجمالي المبيعات: <span id="totalSales">0</span> دينار</span>
+    </div>
+
+    <script>
+        let allMedicines = JSON.parse(localStorage.getItem("medicineData")) || [];
+        let totalSales = localStorage.getItem("totalSales") ? parseFloat(localStorage.getItem("totalSales")) : 0;
+        document.getElementById("totalSales").textContent = totalSales.toFixed(2);
+
+        function confirmSale() {
+            const medicineNameElem = document.getElementById("medicineName");
+            const quantityInput = document.getElementById("saleQuantity");
+            const quantityToSell = parseInt(quantityInput.value);
+            const price = parseFloat(document.getElementById("price").textContent);
+
+            if (medicineNameElem.textContent !== "غير موجود" && !isNaN(price)) {
+                let medicine = allMedicines.find(med => med[1] === medicineNameElem.textContent);
+                if (medicine) {
+                    let currentStock = parseInt(medicine[2]);
+                    if (quantityToSell > currentStock) {
+                        alert("الكمية المطلوبة أكبر من المخزون المتاح!");
+                        return;
+                    }
+
+                    medicine[2] = currentStock - quantityToSell;
+                    localStorage.setItem("medicineData", JSON.stringify(allMedicines));
+
+                    totalSales += price * quantityToSell;
+                    localStorage.setItem("totalSales", totalSales);
+                    document.getElementById("totalSales").textContent = totalSales.toFixed(2);
+
+                    quantityInput.value = 1;
+                    document.getElementById("barcode").value = "";
+                    document.getElementById("medicineNameInput").value = "";
+                    medicineNameElem.textContent = "غير موجود";
+                    document.getElementById("price").textContent = "غير موجود";
+                    document.getElementById("quantity").textContent = "غير موجود";
+                    document.getElementById("expiryDate").textContent = "غير موجود";
+                    document.getElementById("barcode").focus();
+                } else {
+                    alert("الدواء غير موجود في النظام.");
+                }
+            } else {
+                alert("الدواء غير موجود في النظام.");
+            }
+        }
+
+        function resetSales() {
+            totalSales = 0;
+            localStorage.setItem("totalSales", totalSales);
+            document.getElementById("totalSales").textContent = totalSales.toFixed(2);
+        }
+
+        function searchByName() {
+            const medicineNameInput = document.getElementById("medicineNameInput").value.toLowerCase();
+            const foundMedicine = allMedicines.find(med => med[1].toLowerCase() === medicineNameInput);
+            if (foundMedicine) {
+                document.getElementById("medicineName").textContent = foundMedicine[1];
+                document.getElementById("price").textContent = foundMedicine[4];
+                document.getElementById("quantity").textContent = foundMedicine[2];
+                document.getElementById("expiryDate").textContent = foundMedicine[3];
+            } else {
+                document.getElementById("medicineName").textContent = "غير موجود";
+                document.getElementById("price").textContent = "غير موجود";
+                document.getElementById("quantity").textContent = "غير موجود";
+                document.getElementById("expiryDate").textContent = "غير موجود";
+            }
+        }
+
+        function barcodeScanned() {
+            const barcode = document.getElementById("barcode").value;
+            const foundMedicine = allMedicines.find(med => med[0] === barcode);
+            if (foundMedicine) {
+                document.getElementById("medicineName").textContent = foundMedicine[1];
+                document.getElementById("price").textContent = foundMedicine[4];
+                document.getElementById("quantity").textContent = foundMedicine[2];
+                document.getElementById("expiryDate").textContent = foundMedicine[3];
+            } else {
+                document.getElementById("medicineName").textContent = "غير موجود";
+                document.getElementById("price").textContent = "غير موجود";
+                document.getElementById("quantity").textContent = "غير موجود";
+                document.getElementById("expiryDate").textContent = "غير موجود";
+            }
+        }
+
+        // الانتقال من اسم الدواء إلى الكمية بالـ Enter
+        document.getElementById("medicineNameInput").addEventListener("keydown", function (event) {
+            if (event.key === "Enter") {
+                document.getElementById("saleQuantity").focus();
+            }
+        });
+
+        // تأكيد البيع بالـ Enter
+        document.getElementById("saleQuantity").addEventListener("keydown", function (event) {
+            if (event.key === "Enter") {
+                confirmSale();
+            }
+        });
+    </script>
+</body>
+
+</html>
