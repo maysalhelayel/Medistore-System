@@ -173,42 +173,42 @@
 
 <body>
     <div class="container">
-        <h2>مخزن الأدوية</h2>
+        <h2>Work Page</h2>
 
         <!-- Barcode input and scanner -->
         <div class="input-container">
-            <input type="text" id="barcode" placeholder="الباركود" oninput="barcodeScanned()">
-            <button onclick="startScanner()">امسح الباركود</button>
+            <input type="text" id="barcode" placeholder="barcode" oninput="barcodeScanned()">
+            <button onclick="startScanner()">اEnable the barcode</button>
         </div>
         <br><br>
         <div id="reader" class="hidden"></div>
         <br><br>
         <div class="input-container">
-            <input type="text" id="medicineName" placeholder="اسم الدواء">
-            <input type="number" id="quantity" placeholder="الكمية">
+            <input type="text" id="medicineName" placeholder="Medicine Name">
+            <input type="number" id="quantity" placeholder="quantity">
             <input type="date" id="expiryDate">
-            <input type="text" id="price" placeholder="السعر">
-            <button onclick="addMedicine()">إدخال</button>
+            <input type="text" id="price" placeholder="price">
+            <button onclick="addMedicine()">ADD</button>
         </div>
 
-        <button onclick="printPage()">اطبع PDF</button>
+        <button onclick="printPage()">print PDF</button>
 
         <!-- Search Bar Above the Table -->
         <br><br>
         <div class="search-container">
-            <input type="text" id="searchInput" placeholder="ابحث عن الدواء..." onkeyup="searchMedicine()">
+            <input type="text" id="searchInput" placeholder="Search Medicine..." onkeyup="searchMedicine()">
         </div>
 
         <!-- Medicine Table -->
         <table class="data-table" id="medicineTable">
             <thead>
                 <tr>
-                    <th>الباركود</th>
-                    <th>اسم الدواء</th>
-                    <th>الكمية</th>
-                    <th>تاريخ الانتهاء</th>
-                    <th>السعر</th>
-                    <th>حذف</th>
+                    <th>barcode</th>
+                    <th>Medicine</th>
+                    <th>quantity</th>
+                    <th>Expiry Date</th>
+                    <th>price</th>
+                    <th>DELETE</th>
                 </tr>
             </thead>
             <tbody></tbody>
@@ -326,5 +326,6 @@
         }
     </script>
 </body>
+
 
 </html>
