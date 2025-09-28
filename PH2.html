@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إدارة الأدوية</title>
+    <title>Medicine Management</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;700&display=swap');
@@ -131,35 +131,35 @@
 
 <body>
     <div class="container">
-        <h2>إدارة الأدوية</h2>
+        <h2>Medicine Management</h2>
         <div class="input-container">
-            <input type="text" id="barcode" placeholder="مسح الباركود" oninput="barcodeScanned()">
+            <input type="text" id="barcode" placeholder="Scan barcode" oninput="barcodeScanned()">
             <br><br>
-            <button onclick="startScanner()">امسح الباركود</button>
+            <button onclick="startScanner()">Scan Barcode</button>
         </div>
         <div class="input-container">
-            <input type="text" id="medicineNameInput" placeholder="اسم الدواء" oninput="searchByName()">
+            <input type="text" id="medicineNameInput" placeholder="Medicine Name" oninput="searchByName()">
         </div>
         <div class="output-container" id="output">
-            <p><strong>اسم الدواء: </strong><span id="medicineName">غير موجود</span></p>
-            <p><strong>السعر: </strong><span id="price">غير موجود</span></p>
-            <p><strong>الكمية: </strong><span id="quantity">غير موجود</span></p>
-            <p><strong>تاريخ الانتهاء: </strong><span id="expiryDate">غير موجود</span></p>
+            <p><strong>Medicine Name: </strong><span id="medicineName">Not found</span></p>
+            <p><strong>Price: </strong><span id="price">Not found</span></p>
+            <p><strong>Quantity: </strong><span id="quantity">Not found</span></p>
+            <p><strong>Expiry Date: </strong><span id="expiryDate">Not found</span></p>
         </div>
         <div class="input-container">
-            <label for="saleQuantity">الكمية:</label>
+            <label for="saleQuantity">Quantity:</label>
             <input type="number" id="saleQuantity" value="1" min="1">
         </div>
         <div class="input-container">
-            <button onclick="confirmSale()">تأكيد عملية البيع</button>
+            <button onclick="confirmSale()">Confirm Sale</button>
         </div>
         <div class="input-container">
-            <button class="reset-button" onclick="resetSales()">إعادة تصفير عداد المبيعات</button>
+            <button class="reset-button" onclick="resetSales()">Reset Total Sales</button>
         </div>
     </div>
 
     <div id="totalSalesBox">
-        <span>إجمالي المبيعات: <span id="totalSales">0</span> دينار</span>
+        <span>Total Sales: <span id="totalSales">0</span> USD</span>
     </div>
 
     <script>
@@ -173,12 +173,12 @@
             const quantityToSell = parseInt(quantityInput.value);
             const price = parseFloat(document.getElementById("price").textContent);
 
-            if (medicineNameElem.textContent !== "غير موجود" && !isNaN(price)) {
+            if (medicineNameElem.textContent !== "Not found" && !isNaN(price)) {
                 let medicine = allMedicines.find(med => med[1] === medicineNameElem.textContent);
                 if (medicine) {
                     let currentStock = parseInt(medicine[2]);
                     if (quantityToSell > currentStock) {
-                        alert("الكمية المطلوبة أكبر من المخزون المتاح!");
+                        alert("Requested quantity exceeds available stock!");
                         return;
                     }
 
@@ -192,16 +192,16 @@
                     quantityInput.value = 1;
                     document.getElementById("barcode").value = "";
                     document.getElementById("medicineNameInput").value = "";
-                    medicineNameElem.textContent = "غير موجود";
-                    document.getElementById("price").textContent = "غير موجود";
-                    document.getElementById("quantity").textContent = "غير موجود";
-                    document.getElementById("expiryDate").textContent = "غير موجود";
+                    medicineNameElem.textContent = "Not found";
+                    document.getElementById("price").textContent = "Not found";
+                    document.getElementById("quantity").textContent = "Not found";
+                    document.getElementById("expiryDate").textContent = "Not found";
                     document.getElementById("barcode").focus();
                 } else {
-                    alert("الدواء غير موجود في النظام.");
+                    alert("Medicine not found in system.");
                 }
             } else {
-                alert("الدواء غير موجود في النظام.");
+                alert("Medicine not found in system.");
             }
         }
 
@@ -220,10 +220,10 @@
                 document.getElementById("quantity").textContent = foundMedicine[2];
                 document.getElementById("expiryDate").textContent = foundMedicine[3];
             } else {
-                document.getElementById("medicineName").textContent = "غير موجود";
-                document.getElementById("price").textContent = "غير موجود";
-                document.getElementById("quantity").textContent = "غير موجود";
-                document.getElementById("expiryDate").textContent = "غير موجود";
+                document.getElementById("medicineName").textContent = "Not found";
+                document.getElementById("price").textContent = "Not found";
+                document.getElementById("quantity").textContent = "Not found";
+                document.getElementById("expiryDate").textContent = "Not found";
             }
         }
 
@@ -236,21 +236,21 @@
                 document.getElementById("quantity").textContent = foundMedicine[2];
                 document.getElementById("expiryDate").textContent = foundMedicine[3];
             } else {
-                document.getElementById("medicineName").textContent = "غير موجود";
-                document.getElementById("price").textContent = "غير موجود";
-                document.getElementById("quantity").textContent = "غير موجود";
-                document.getElementById("expiryDate").textContent = "غير موجود";
+                document.getElementById("medicineName").textContent = "Not found";
+                document.getElementById("price").textContent = "Not found";
+                document.getElementById("quantity").textContent = "Not found";
+                document.getElementById("expiryDate").textContent = "Not found";
             }
         }
 
-        // الانتقال من اسم الدواء إلى الكمية بالـ Enter
+        // Move from medicine name to quantity input using Enter
         document.getElementById("medicineNameInput").addEventListener("keydown", function (event) {
             if (event.key === "Enter") {
                 document.getElementById("saleQuantity").focus();
             }
         });
 
-        // تأكيد البيع بالـ Enter
+        // Confirm sale using Enter
         document.getElementById("saleQuantity").addEventListener("keydown", function (event) {
             if (event.key === "Enter") {
                 confirmSale();
